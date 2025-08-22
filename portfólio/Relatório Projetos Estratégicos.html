@@ -1,0 +1,570 @@
+
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório do Portfólio de Projetos Estratégicos - UFCA</title>
+    <!-- Inclui a biblioteca Chart.js para a criação de gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Inclui o plugin Chart.js DataLabels para exibir rótulos de dados nos gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <style>
+        /* Estilos globais e de layout para uma aparência limpa e profissional */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Calibri', Arial, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #532b1d;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #532b1d 0%, #6d3a28 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(83, 43, 29, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            text-align: center;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            border-left: 5px solid;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+
+        /* Cores de destaque para os cartões de estatísticas */
+        .stat-card.total { border-left-color: #532b1d; }
+        .stat-card.in-progress { border-left-color: #50bdca; }
+        .stat-card.completed { border-left-color: #75b747; }
+        .stat-card.cancelled { border-left-color: #f0908d; }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .chart-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #532b1d;
+            text-align: center;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group label {
+            font-weight: bold;
+            color: #532b1d;
+        }
+
+        select, input {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #50bdca;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #532b1d;
+            color: white;
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #f1f3f4;
+            font-size: 0.9rem;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        /* Cores dos badges de status */
+        .status-concluido { background: #e8f5e8; color: #2e7d32; }
+        .status-cancelado { background: #ffebee; color: #c62828; }
+        .status-em-andamento { background: #e3f2fd; color: #1565c0; }
+        .status-atrasado { background: #fff3e0; color: #ef6c00; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #6d3a28;
+            transition: width 0.3s ease;
+        }
+        
+        /* Estilos responsivos */
+        @media (max-width: 768px) {
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            table {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Relatório do Portfólio de Projetos Estratégicos</h1>
+            <p>Universidade Federal do Cariri - UFCA</p>
+        </div>
+
+        <!-- Cartões de estatísticas principais -->
+        <div class="stats-grid">
+            <div class="stat-card total">
+                <div class="stat-number" id="totalProjects">0</div>
+                <div class="stat-label">Total de Projetos</div>
+            </div>
+            <div class="stat-card in-progress">
+                <div class="stat-number" id="inProgressProjects">0</div>
+                <div class="stat-label">Em Andamento</div>
+            </div>
+            <div class="stat-card completed">
+                <div class="stat-number" id="completedProjects">0</div>
+                <div class="stat-label">Concluídos</div>
+            </div>
+            <div class="stat-card cancelled">
+                <div class="stat-number" id="cancelledProjects">0</div>
+                <div class="stat-label">Cancelados</div>
+            </div>
+        </div>
+        
+        <!-- Seção de gráficos -->
+        <div class="charts-section">
+            <div class="chart-container">
+                <div class="chart-title">Distribuição de Projetos por Setor</div>
+                <canvas id="sectorChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Status dos Projetos</div>
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Seção de filtros e busca -->
+        <div class="filters">
+            <div class="filter-group">
+                <label>Filtrar por Setor:</label>
+                <select id="sectorFilter">
+                    <option value="">Todos os Setores</option>
+                </select>
+                
+                <label>Status:</label>
+                <select id="statusFilter">
+                    <option value="">Todos os Status</option>
+                    <option value="Concluído">Concluído</option>
+                    <option value="Cancelado">Cancelado</option>
+                    <option value="Em andamento">Em andamento</option>
+                </select>
+                
+                <label>Buscar:</label>
+                <input type="text" id="searchInput" placeholder="Digite para buscar...">
+            </div>
+        </div>
+
+        <!-- Tabela de projetos -->
+        <div class="table-container">
+            <table id="projectTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Projeto</th>
+                        <th>Setor</th>
+                        <th>Progresso</th>
+                        <th>Status</th>
+                        <th>Atrasado</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Registra o plugin de datalabels para ser usado nos gráficos
+        Chart.register(ChartDataLabels);
+
+        // Dados extraídos do arquivo CSV e do DOCX
+        const projectData = [
+            { "id": "PE-01", "nome": "Expansão da Graduação: Novos Cursos e Aumento de Vagas em Cursos Existentes", "setor": "PROGRAD", "status": "Concluído", "progresso": 100, "atrasado": "Não" },
+            { "id": "PE-02", "nome": "Elaboração e implementação do Plano Diretor de Infraestrutura - Período I: 2022-2025", "setor": "DINFRA", "status": "Cancelado", "progresso": 0, "atrasado": "Não" },
+            { "id": "PE-03", "nome": "Implantação do Hospital Veterinário Universitário", "setor": "CCAB", "status": "Em andamento", "progresso": 38, "atrasado": "Sim" },
+            { "id": "PE-04", "nome": "Implantação da Clínica Escola da Faculdade de Medicina", "setor": "FAMED", "status": "Concluído", "progresso": 100, "atrasado": "Não" },
+            { "id": "PE-05", "nome": "Integralização da Extensão nos Cursos de Graduação", "setor": "PROEX", "status": "Em andamento", "progresso": 94.3, "atrasado": "Sim" },
+            { "id": "PE-06", "nome": "Desenvolvimento de Sistemas de Informação para melhoria dos processos das Atividades Acadêmicas da UFCA", "setor": "DTI", "status": "Em andamento", "progresso": 80, "atrasado": "Sim" },
+            { "id": "PE-07", "nome": "Reestruturação do Campus Icó e Implantação do Centro de Educação a Distância", "setor": "CEAD", "status": "Em andamento", "progresso": 90, "atrasado": "Sim" },
+            { "id": "PE-08", "nome": "Elaboração e Implementação do Plano Institucional de Internacionalização da UFCA", "setor": "SCI", "status": "Em andamento", "progresso": 56, "atrasado": "Sim" },
+            { "id": "PE-09", "nome": "Implantação da Estratégia de Governo Digital do Governo Federal", "setor": "DTI", "status": "Cancelado", "progresso": 0, "atrasado": "Não" },
+            { "id": "PE-10", "nome": "Desenvolvimento de Ambiente Virtual de Aprendizagem (AVA) para cursos EaD", "setor": "DTI", "status": "Em andamento", "progresso": 50, "atrasado": "Sim" },
+            { "id": "PE-11", "nome": "Elaboração e implementação do Plano Diretor de Tecnologia da Informação (PDTI 2023-2026)", "setor": "DTI", "status": "Em andamento", "progresso": 12.2, "atrasado": "Sim" },
+            { "id": "PE-12", "nome": "Elaboração e Implementação da Política Institucional de Educação a Distância (EaD)", "setor": "CEAD", "status": "Em andamento", "progresso": 70, "atrasado": "Sim" },
+            { "id": "PE-13", "nome": "Revisão e implementação do Modelo de Governança e Gestão Estratégica e revisão do PDI", "setor": "PROPLAN", "status": "Em andamento", "progresso": 90, "atrasado": "Não" },
+            { "id": "PE-14", "nome": "Construção e Implementação da Base Integrada de Desempenho das Unidades Organizacionais", "setor": "PROPLAN", "status": "Em andamento", "progresso": 40, "atrasado": "Sim" },
+            { "id": "PE-15", "nome": "Aprimoramento da Assistência Estudantil: Efetividade Acadêmica e Eficiência Financeira", "setor": "PRAE", "status": "Cancelado", "progresso": 0, "atrasado": "Não" },
+            { "id": "PE-16", "nome": "Elaboração dos Planos de Desenvolvimento das Unidades Organizacionais", "setor": "PROPLAN", "status": "Em andamento", "progresso": 60, "atrasado": "Não" },
+            { "id": "PE-17", "nome": "Desenvolvimento de Ambiente Virtual de Aprendizagem (AVA) para cursos presenciais", "setor": "DTI", "status": "Cancelado", "progresso": 0, "atrasado": "Não" },
+            { "id": "PE-18", "nome": "Consolidação e implantação de novos programas de pós-graduação", "setor": "PRPI", "status": "Concluído", "progresso": 100, "atrasado": "Não" },
+            { "id": "PE-19", "nome": "Elaboração e implantação do Modelo de Gestão de Riscos em Contratações de Bens e Serviços", "setor": "PROAD", "status": "Em andamento", "progresso": 70, "atrasado": "Sim" },
+            { "id": "PE-20", "nome": "Gerenciamento de resíduos recicláveis e laboratoriais (perigosos e infectantes).", "setor": "PROPLAN", "status": "Em andamento", "progresso": 87.5, "atrasado": "Sim" },
+            { "id": "PE-21", "nome": "Desenvolvimento de Modelo para o Planejamento Orçamentário integrado ao PDI", "setor": "PROPLAN", "status": "Concluído", "progresso": 100, "atrasado": "Não" },
+            { "id": "PE-22", "nome": "Implantação da Incubadora de Empresas", "setor": "PRPI", "status": "Em andamento", "progresso": 33.3, "atrasado": "Sim" },
+            { "id": "PE-23", "nome": "Adequação da Estrutura Organizacional à Cadeia de Valor e à estratégia da UFCA", "setor": "PROPLAN", "status": "Em andamento", "progresso": 40, "atrasado": "Sim" },
+            { "id": "PE-24", "nome": "Implantação da Editora Digital da UFCA", "setor": "PRPI", "status": "Em andamento", "progresso": 0, "atrasado": "Sim" },
+            { "id": "PE-25", "nome": "Implantação dos Museus Virtual e Físico", "setor": "PROCULT", "status": "Em andamento", "progresso": 20, "atrasado": "Não" },
+            { "id": "PE-26", "nome": "Ampliação, diversificação e melhoria da efetividade de parcerias interinstitucionais", "setor": "DIARI", "status": "Em andamento", "progresso": 80, "atrasado": "Sim" },
+            { "id": "PE-27", "nome": "Fortalecimento e aprimoramento dos serviços de Comunicação Institucional", "setor": "DCOM", "status": "Em andamento", "progresso": 75, "atrasado": "Sim" },
+            { "id": "PE-28", "nome": "Elaboração e implantação de Programa Permanente para Promoção de Debates", "setor": "PROCULT", "status": "Concluído", "progresso": 100, "atrasado": "Não" },
+            { "id": "PE-29", "nome": "Elaboração e implementação do Programa de Desenvolvimento de Competência dos Gestores", "setor": "PROGEP", "status": "Cancelado", "progresso": 0, "atrasado": "Não" },
+            { "id": "PE-30", "nome": "Desenvolvimento de Sistemas de Informação para Inovação dos Processos de Gestão", "setor": "DTI", "status": "Concluído", "progresso": 40, "atrasado": "Sim" },
+            { "id": "PE-31", "nome": "Implantação de Repositório Institucional e Unificação dos repositórios existentes", "setor": "DTI", "status": "Em andamento", "progresso": 90, "atrasado": "Sim" },
+            { "id": "PE-32", "nome": "Fortalecimento da Segurança da Informação e proteção de dados pessoais", "setor": "DTI", "status": "Em andamento", "progresso": 33, "atrasado": "Sim" },
+            { "id": "PE-33", "nome": "Implantação da Rádio Universitária", "setor": "Reitoria", "status": "Cancelado", "progresso": 0, "atrasado": "Não" },
+            { "id": "PE-34", "nome": "Interiorização das ações de extensão e cultura - Ciclo 2022/23 do UFCA Itinerante", "setor": "PROEX", "status": "Em andamento", "progresso": 100, "atrasado": "Não" },
+            { "id": "PE-35", "nome": "Efetividade dos Cursos de Graduação - Revisão do Regimento dos Cursos de Graduação e do Projeto Pedagógico Institucional (PPI)", "setor": "PROGRAD", "status": "Concluído", "progresso": 80, "atrasado": "Não" },
+            { "id": "PE-36", "nome": "Melhoria de Indicadores de Desempenho Acadêmico e de Sustentabilidade Orçamentária da UFCA", "setor": "PROPLAN", "status": "Em andamento", "progresso": 90, "atrasado": "Não" },
+            { "id": "PE-37", "nome": "Economicidade de Aquisições e Otimização da Execução Orçamentária", "setor": "PROAD", "status": "Em andamento", "progresso": 45, "atrasado": "Não" },
+            { "id": "PE-38", "nome": "Expansão e modernização da rede de dados cabeada e sem fio (Wi-Fi) e do parque de equipamentos de Tecnologia da Informação e Comunicação (TI&C) em toda a UFCA.", "setor": "DTI", "status": "Em andamento", "progresso": 10, "atrasado": "Não" }
+        ];
+
+        let filteredData = [...projectData];
+
+        // Função para calcular e exibir as estatísticas principais
+        function calculateStats() {
+            const total = filteredData.length;
+            const inProgress = filteredData.filter(p => p.status === 'Em andamento').length;
+            const completed = filteredData.filter(p => p.status === 'Concluído').length;
+            const cancelled = filteredData.filter(p => p.status === 'Cancelado').length;
+
+            document.getElementById('totalProjects').textContent = total;
+            document.getElementById('inProgressProjects').textContent = inProgress;
+            document.getElementById('completedProjects').textContent = completed;
+            document.getElementById('cancelledProjects').textContent = cancelled;
+        }
+
+        // Função para preencher a lista de setores no filtro
+        function populateFilters() {
+            const sectors = [...new Set(projectData.map(p => p.setor))].sort();
+            const sectorFilter = document.getElementById('sectorFilter');
+            
+            sectors.forEach(sector => {
+                const option = document.createElement('option');
+                option.value = sector;
+                option.textContent = sector;
+                sectorFilter.appendChild(option);
+            });
+        }
+
+        // Função para renderizar a tabela de projetos
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            filteredData.forEach(p => {
+                const tr = document.createElement('tr');
+                let statusClass = '';
+                if (p.status === 'Concluído') {
+                    statusClass = 'status-concluido';
+                } else if (p.status === 'Cancelado') {
+                    statusClass = 'status-cancelado';
+                } else if (p.atrasado === 'Sim') {
+                    statusClass = 'status-atrasado';
+                } else {
+                    statusClass = 'status-em-andamento';
+                }
+
+                tr.innerHTML = `
+                    <td><strong>${p.id}</strong></td>
+                    <td>${p.nome}</td>
+                    <td>${p.setor}</td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${p.progresso}%"></div>
+                        </div>
+                        ${p.progresso}%
+                    </td>
+                    <td><span class="status-badge ${statusClass}">${p.status}</span></td>
+                    <td>${p.atrasado}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Função para filtrar os dados com base nos seletores e busca
+        function filterData() {
+            const sectorFilter = document.getElementById('sectorFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            filteredData = projectData.filter(p => {
+                const matchesSector = !sectorFilter || p.setor === sectorFilter;
+                const matchesStatus = !statusFilter || p.status === statusFilter;
+                const matchesSearch = !searchTerm || 
+                    p.id.toLowerCase().includes(searchTerm) || 
+                    p.nome.toLowerCase().includes(searchTerm) ||
+                    p.setor.toLowerCase().includes(searchTerm);
+
+                return matchesSector && matchesStatus && matchesSearch;
+            });
+
+            renderTable();
+            calculateStats();
+            updateCharts();
+        }
+
+        // Função para criar e inicializar os gráficos
+        function createCharts() {
+            // Gráfico de Distribuição por Setor
+            const sectorCount = {};
+            projectData.forEach(p => {
+                sectorCount[p.setor] = (sectorCount[p.setor] || 0) + 1;
+            });
+
+            const sectorCtx = document.getElementById('sectorChart').getContext('2d');
+            window.sectorChart = new Chart(sectorCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(sectorCount),
+                    datasets: [{
+                        label: 'Número de Projetos',
+                        data: Object.values(sectorCount),
+                        backgroundColor: '#6d3a28',
+                        borderColor: '#532b1d',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true, 
+                    indexAxis: 'x',
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        },
+                        x: {
+                            ticks: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw}`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            color: '#532b1d',
+                            formatter: Math.round,
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Gráfico de Status dos Projetos (Rosca)
+            const statusCount = {};
+            projectData.forEach(p => {
+                statusCount[p.status] = (statusCount[p.status] || 0) + 1;
+            });
+
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            window.statusChart = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statusCount),
+                    datasets: [{
+                        data: Object.values(statusCount),
+                        backgroundColor: ['#e3f2fd', '#e8f5e8', '#ffebee'],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        datalabels: {
+                            formatter: (value, context) => value,
+                            color: '#532b1d',
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Função para atualizar os gráficos após a filtragem
+        function updateCharts() {
+            // Atualizar gráfico de setor
+            const sectorCount = {};
+            filteredData.forEach(p => {
+                sectorCount[p.setor] = (sectorCount[p.setor] || 0) + 1;
+            });
+            window.sectorChart.data.labels = Object.keys(sectorCount);
+            window.sectorChart.data.datasets[0].data = Object.values(sectorCount);
+            window.sectorChart.update();
+
+            // Atualizar gráfico de status
+            const statusCount = {};
+            filteredData.forEach(p => {
+                statusCount[p.status] = (statusCount[p.status] || 0) + 1;
+            });
+            window.statusChart.data.labels = Object.keys(statusCount);
+            window.statusChart.data.datasets[0].data = Object.values(statusCount);
+            window.statusChart.update();
+        }
+
+        // Event listeners para os filtros
+        document.getElementById('sectorFilter').addEventListener('change', filterData);
+        document.getElementById('statusFilter').addEventListener('change', filterData);
+        document.getElementById('searchInput').addEventListener('input', filterData);
+
+        // Inicializa a página
+        populateFilters();
+        renderTable();
+        calculateStats();
+        createCharts();
+    </script>
+</body>
+</html>
